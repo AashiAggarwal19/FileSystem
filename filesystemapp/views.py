@@ -7,6 +7,10 @@ from django.contrib import messages
 from django.views.generic import CreateView
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from datetime import timedelta
+
 
 def register(request):
     if request.method == 'POST':
@@ -50,6 +54,17 @@ def login_view(request):
         if user is not None:
             user = authenticate(request, username=user.username, password=password)  
             if user is not None:
+                models = ['Folder', 'File']
+                app_label = 'filesystemapp'
+
+                for model in models:
+                    content_type=ContentType.objects.get(app_label=app_label, model='model')
+                    read_permission = Permission.objects.get(codename= f'can_read_{model}', content_type=content_type)
+                    permission_codename = f'{app_label}.can_read_{model}'
+                    if not user.has_perm(permission_codename):
+                        user.user_permissions.add(read_permission)
+
+                request.session.set_expiry(timedelta(hours=2))  
                 login(request, user)
                 return redirect('home') 
             else:
@@ -81,7 +96,7 @@ def delete_folder(request):
 
             except Folder.DoesNotExist:
                 try:
-                    file = File.objects.get(name=path)
+                    file = File.objects.get(id=path)
                     if file.file:  
                         file.file.delete(save=False)
                     file.delete()
@@ -90,16 +105,9 @@ def delete_folder(request):
                         return redirect("/")
 
                     return redirect("/")
-
-
                 except File.DoesNotExist:
                     pass
-
     return redirect("/")
-
-
-
-
 
 
 def rename_item(request):
@@ -162,19 +170,19 @@ class FileCreateListView(CreateView):
             parent_folder = Folder.objects.filter(name=parent_folder_name).first()
 
             new_folder=Folder.objects.create(name=folder_name, parent=parent_folder)
+            return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')
+
 
         elif "file" in request.FILES:
-            uploaded_file = request.FILES['file']
-
+            files = request.FILES.getlist('file')  
             parent_folder_name = request.GET.get("path") or "root"
             parent_folder = Folder.objects.filter(name=parent_folder_name).first()
 
-            file_instance = File.objects.create(
-                name=uploaded_file.name,
-                folder=parent_folder,
-                file=uploaded_file  
-            )
-            print("File uploaded",file_instance)
+            for uploaded_file in files:
+                file_instance = File.objects.create(
+                    name=uploaded_file.name,
+                    folder=parent_folder,
+                    file=uploaded_file  
+                )
 
-        
-        return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')
+            return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')

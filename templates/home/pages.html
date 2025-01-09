@@ -29,6 +29,7 @@
                 <div class="actions">
                     <button id="create-folder" style= "font-size: medium">Create Folder</button>
                     <button id="upload-file" style= "font-size: medium" >Upload File</button>
+                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: medium" >Download All</button>
                 </div>
             </header>
             
@@ -39,18 +40,22 @@
                     <div class="three-dots">
                         <i class="fa fa-ellipsis-v" style="padding:5px"></i>
                         <div class="dropdown-menu" style="display: none;">
-                            {% comment %} <div class="dropdown-item rename" onclick="makeEditable('folder', '{{ folder.name }}')">
-                                <i class="fas fa-edit" style="color: black;"></i> Rename
-                            </div> {% endcomment %}
                             <div class="dropdown-item delete">
                                 <form method="post" action="{% url 'delete-folder' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="path" value="{{ folder.name }}">
-                                    <button type="submit" style="border: none; background: none; padding: 0; margin: 0;">
+                                    <button type="submit" style="border: none; background: none; padding: 0; margin: 0;" class="action-btn download-btn">
                                         <i class="fas fa-trash" style="color: red;"></i> Delete
                                     </button>
                                 </form>
                             </div>
+                             <div class="dropdown-item download">
+                                <a href="" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
+                                    <span>Download</span>
+                                </a>
+                            </div> 
+
                         </div>
                     </div>
                     <a href="{% url 'get-file-system' %}?path={{ folder.name }}">
@@ -59,27 +64,6 @@
                         </div>
                         <div class="folder-name">
                             <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
-                            {% comment %} <form id="rename-folder-form-{{ folder.name }}" method="post" action="{% url 'rename-item' %}" onsubmit="event.stopPropagation();">
-                                {% csrf_token %}
-                                <input type="hidden" name="type" value="folder">
-                                <input type="hidden" name="path" value="{{ folder.name }}">
-                                <input 
-                                    type="text" 
-                                    name="new_name" 
-                                    value="{{ folder.name }}" 
-                                    style="display:none; width: 90%;" 
-                                    id="folder-input-{{ folder.name }}" 
-                                    onclick="stopAnchorClick(event)"
-                                >
-                                <button 
-                                    type="submit" 
-                                    class="rename-button" 
-                                    id="rename-submit-{{ folder.name }}" 
-                                    style="display:none;"
-                                >
-                                    Rename
-                                </button>
-                            </form> {% endcomment %}
                             
                         </div>
                     </a>
@@ -91,13 +75,10 @@
                     <div class="three-dots">
                         <i class="fa fa-ellipsis-v" style="padding:5px"></i>
                         <div class="dropdown-menu" style="display: none;">
-                            {% comment %} <div class="dropdown-item rename" onclick="makeEditable('file', '{{ file.name }}')">
-                                <i class="fas fa-edit" style="color: black;"></i> Rename
-                            </div> {% endcomment %}
                             <div class="dropdown-item delete">
                                 <form method="post" action="{% url 'delete-folder' %}">
                                     {% csrf_token %}
-                                    <input type="hidden" name="path" value="{{ file.name }}">
+                                    <input type="hidden" name="path" value="{{ file.id }}">
                                     <button type="submit" style="border: none; background: none; padding: 0; margin: 0;">
                                         <i class="fas fa-trash" style="color: red; margin-right: 8px;"></i> Delete
                                     </button>
@@ -132,16 +113,6 @@
                     <div class="file-info">
                         <div class="file-name">
                             <span id="file-name-{{ file.name }}">{{ file.name }}</span>
-                            {% comment %} <form id="rename-file-form-{{ file.name }}" method="post" action="{% url 'rename-item' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="type" value="file">
-                                <input type="hidden" name="path" value="{{ file.name }}">
-                                <input type="text" name="new_name" value="{{ file.name }}" style="display:none" 
-                                    id="file-input-{{ file.name }}">
-                                <button type="submit" class="rename-button" id="rename-submit-{{ file.name }}" style="display:none;">
-                                    Rename
-                                </button>
-                            </form> {% endcomment %}
                         </div>
                     </div>
                 </div>
@@ -169,13 +140,20 @@
             <h2>Upload File</h2>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="file" name="file" id="fileInput" required />                
+                <input type="file" name="file" id="fileInput" multiple required />                
                 <button type="submit" id="uploadFileBtn">Upload</button>
                 <button type="button" id="closeUploadModalBtn">Cancel</button>
             </form>
         </div>
     </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.getElementById("download-all-zip").addEventListener("click", function () {
+            console.log(document.getElementById("download-all-zip"), "pokkk")
+            window.location.href = `/download-all-zip/`;  
+        });
+</script>
 <script>
     function stopAnchorClick(event) {
         event.stopPropagation(); 
@@ -215,18 +193,6 @@
     });
     
 </script>
-
-{% comment %} <script>
-        function makeEditable(type, name) {
-            var nameElement = document.getElementById(type + '-name-' + name);
-            var inputElement = document.getElementById(type + '-input-' + name);
-            var submitButton = document.getElementById('rename-submit-' + name);
-            
-            nameElement.style.display = 'none';
-            inputElement.style.display = 'inline-block';
-            submitButton.style.display = 'inline-block';
-        }
-</script> {% endcomment %}
 <script>
     document.querySelectorAll('.three-dots').forEach(function (dot) {
         dot.addEventListener('click', function (event) {

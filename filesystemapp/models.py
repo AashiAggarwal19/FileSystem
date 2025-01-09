@@ -15,7 +15,7 @@ class Folder(models.Model):
     def __str__(self):        
         return self.path if self.path else f"Folder: {self.name}"
 class File(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='files')
 
