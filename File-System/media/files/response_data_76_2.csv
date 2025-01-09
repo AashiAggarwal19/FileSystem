@@ -1,0 +1,2 @@
+created_at,updated_at,currency,pg_status,business_name,vt_id,pg_ref,merchant_balance,merchant_ref,to_name,captured_amount,amount,charges,gst,transaction_mode,acquirer_ref,route_name,bank_ref,to_email,to_mobile,bank_status,bank_remark,update_by
+"26-11-2024 11:15:51","26-11-2024 11:15:51","INR","Success","NiKI Pvt hyhy","17616361","UAT16100410242119054","143.16","5486944094","null","0.00","0.00","0.00","0.00","QR","null","AIRPPAYTEST2","null","tinaf@gmail.com","9879878676","Success","null","TS8954"
