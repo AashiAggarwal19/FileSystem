@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import Folder, File
+from .models import Folder, File, CustomUser, OTP
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -10,31 +10,49 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from datetime import timedelta
-import os
-from django.conf import settings
+from .models import CustomUser  
+import requests
+from django.utils import timezone
+from random import randint
+
+def send_otp(phone_number):
+    print("isnisde this")
+    otp = randint(100000, 999999)  
+    url = 'https://www.fast2sms.com/dev/bulkV2'
+    headers = {
+        'authorization': '67tlumBYVdfC0xQEsSRoOezDMbWHXcL2njwkay5NAi4gJrqFpTjAYpsx6mPZtNk7hRV4IbUXWe8C1JcG',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    msg = "177601"
+    data = f'sender_id=MOAPPP&message={msg}&variables_values={otp}&route=dlt&numbers={phone_number}'
+    
+    response = requests.post(url, headers=headers, data=data)
+    print(response.json(), "kjbkjbghjn")
+    if response.status_code == 200:
+        OTP.objects.update_or_create(
+            phone_number=phone_number,
+            defaults={'otp': otp, 'generated_at': timezone.now()},
+        )
+        return True
+    else:
+        return False
 
 
 def register(request):
     if request.method == 'POST':
         username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
-
-        if password != confirm_password:
-            messages.error(request, 'Passwords do not match!')
-            return redirect('register')
-
-        if User.objects.filter(username=username).exists():
+        phone_number = request.POST.get('phone_number')
+        
+        if CustomUser.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists!')
             return redirect('register')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email is already registered!')
+        if CustomUser.objects.filter(phone_number=phone_number).exists():
+            messages.error(request, 'Phone Number is already registered!')
             return redirect('register')
 
         try:
-            user = User.objects.create_user(username=username, email=email, password=password)
+            user = CustomUser.objects.create(username=username, phone_number=phone_number)
             user.save()
             messages.success(request, 'Account created successfully! Please log in.')
             return redirect('login')  
@@ -46,33 +64,34 @@ def register(request):
 
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email') 
-        password = request.POST.get('password') 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            user = None
+        phone_number = request.POST.get('phone_number')
+        otp = request.POST.get('otp') 
+        action = request.POST.get("action")
 
-        if user is not None:
-            user = authenticate(request, username=user.username, password=password)  
-            if user is not None:
-                models = ['Folder', 'File']
-                app_label = 'filesystemapp'
-
-                for model in models:
-                    content_type=ContentType.objects.get(app_label=app_label, model='model')
-                    read_permission = Permission.objects.get(codename= f'can_read_{model}', content_type=content_type)
-                    permission_codename = f'{app_label}.can_read_{model}'
-                    if not user.has_perm(permission_codename):
-                        user.user_permissions.add(read_permission)
-
-                request.session.set_expiry(timedelta(hours=2))  
-                login(request, user)
-                return redirect('home') 
-            else:
-                messages.error(request, 'Invalid credentials!')
-        else:
-            messages.error(request, 'No user found with this email address.')
+        if action == 'send_otp' or action == 'resend_otp':
+            try:
+                user = CustomUser.objects.get(phone_number=phone_number)
+                if send_otp(phone_number):  
+                    messages.success(request, 'OTP has been sent to your phone number.')
+                    return render(request, 'authentication/login.html', {'show_otp': True, 'phone_number': phone_number})
+                else:
+                    messages.error(request, 'Failed to send OTP. Please try again.')
+            except CustomUser.DoesNotExist:
+                messages.error(request, "User with this phone number does not exist.")
+            return render(request, 'authentication/login.html')
+    
+        elif action == 'verify_otp': 
+            try:
+                otp_record = OTP.objects.get(phone_number=phone_number, otp=otp)
+                if otp_record.is_expired():
+                    messages.error(request, "OTP has expired.")
+                else:
+                    user = CustomUser.objects.get(phone_number=phone_number)
+                    login(request, user)
+                    return redirect('/')  
+            except OTP.DoesNotExist:
+                    messages.error(request, "Invalid OTP.")
+            return render(request, 'authentication/login.html', {'show_otp': True, 'phone_number': phone_number})
 
     return render(request, 'authentication/login.html')
 

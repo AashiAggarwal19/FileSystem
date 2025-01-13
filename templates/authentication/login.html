@@ -8,36 +8,38 @@
   <link rel="stylesheet" href="{% static 'css/authentication.css' %}"></head>
 <body>
   <div class="wrapper">
-    {% if messages %}
-          <div class="message-container">
-            {% for message in messages %}
-              <div class="message error">
-                <span class="message-icon">⚠️</span> 
-                <span class="message-text">{{ message }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
     <h2>Login</h2>
-    <form method="POST" action="{% url 'login' %}">
+    <form method="POST" id="otp-login-form" action="{% url 'login' %}">
       {% csrf_token %}
 
+      {% if not show_otp %}
       <div class="input-box">
-        <input type="text" name="email" placeholder="Enter your email" required>
+        <input type="text" name="phone_number" placeholder="Enter your phone number" required 
+              value="{{ phone_number|default:'' }}">
+        <input type="hidden" name="action" value="send_otp">
+        <div class="input-box button">
+          <input type="submit" value="Send OTP">
+        </div>
       </div>
-  
-      <div class="input-box">
-        <input type="password" name="password" placeholder="Enter your password" required>
+      <div class="text" style="margin-top:100px">
+        <h3>Don't have an account? <a href="{% url 'register' %}">Register now</a></h3>
       </div>
-  
-  
+    {% endif %}
+
+    {% if show_otp %}
+    <div class="input-box">
+      <input type="hidden" name="phone_number" value="{{ phone_number|default:'' }}">
+      <input type="text" name="otp" placeholder="Enter OTP" required>
+      <input type="hidden" name="action" value="verify_otp">
       <div class="input-box button">
         <input type="submit" value="Log In">
       </div>
+    </div>
+    <div class="text" style="margin-top:80px">
+      <h3>Didn't receive OTP? <a href="#" onclick="document.querySelector('[name=action]').value = 'resend_otp'; this.closest('form').submit();">Resend OTP</a></h3>
+    </div>
+    {% endif %}
   
-      <div class="text">
-        <h3>Don't have an account? <a href="{% url 'register' %}">Register now</a></h3>
-      </div>
     </form>
   </div>
 </body>

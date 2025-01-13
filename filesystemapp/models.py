@@ -1,4 +1,15 @@
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    # username = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15, unique=True)
+
+    def __str__(self):
+        return self.username
+
 
 class Folder(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -23,3 +34,12 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+    
+class OTP(models.Model):
+    phone_number = models.CharField(max_length=256)
+    otp = models.IntegerField(max_length=10)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        expiration_time = self.generated_at + timedelta(minutes=5)  
+        return timezone.now() > expiration_time
