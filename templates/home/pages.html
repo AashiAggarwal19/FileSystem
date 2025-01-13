@@ -1,20 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    {% load static %}
-    {% load custom_tags %}
+{% extends 'elements/base.html' %}
+<title>Home</title>
+{% load static %}
+{% load custom_tags %}
 
-    <link rel="stylesheet" href="{% static 'css/home.css' %}"></head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
 
 
-</head>
-<body>
+{% block content %}
     <div class="dashboard">
-        <main class="main-content">
+         <main class="main-content"> 
             <header class="navbar">
                 <div class="breadcrumb">
                     <span class="breadcrumb-text"> 
@@ -24,14 +21,14 @@
                             Home
                         {% endif %}
                     </span>
-                </div>
+                </div> 
             
-                <div class="actions">
-                    <button id="create-folder" style= "font-size: medium">Create Folder</button>
-                    <button id="upload-file" style= "font-size: medium" >Upload File</button>
-                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: medium" >Download All</button>
-                </div>
-            </header>
+                 <div class="actions">
+                    <button id="create-folder" style= "font-size: large">Create Folder</button>
+                    <button id="upload-file" style= "font-size: large" >Upload File</button>
+                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: large" >Download All</button>
+                </div> 
+             </header>
             
             
             <div id="file-system">
@@ -50,7 +47,7 @@
                                 </form>
                             </div>
                              <div class="dropdown-item download">
-                                <a href="" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                <a href="{% url 'download-zip' name=folder.name %}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
                                     <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
                                     <span>Download</span>
                                 </a>
@@ -117,10 +114,9 @@
                     </div>
                 </div>
                 {% endfor %}
-
             </div>
                     
-        </main>
+        {% comment %} </main> {% endcomment %}
     </div>
 
     <div id="createFolderModal" class="modal">
@@ -140,17 +136,26 @@
             <h2>Upload File</h2>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="file" name="file" id="fileInput" multiple required />                
+                <input type="file" name="file" id="fileInput" multiple required hidden/> 
+                <label for="fileInput" id="customFileInput">
+                    <i class="fas fa-upload"></i> Choose Files
+                </label>
+    
+                <div id="fileNameDisplay">No file chosen</div>               
                 <button type="submit" id="uploadFileBtn">Upload</button>
                 <button type="button" id="closeUploadModalBtn">Cancel</button>
             </form>
         </div>
     </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
     document.getElementById("download-all-zip").addEventListener("click", function () {
-            console.log(document.getElementById("download-all-zip"), "pokkk")
             window.location.href = `/download-all-zip/`;  
         });
 </script>
@@ -159,8 +164,6 @@
         event.stopPropagation(); 
         event.preventDefault(); 
     }
-    
-    
 </script>
 <script>
     function openModal(modalId) {
@@ -191,7 +194,6 @@
     document.getElementById("upload-file")?.addEventListener("click", function() {
         openModal("uploadFileModal");
     });
-    
 </script>
 <script>
     document.querySelectorAll('.three-dots').forEach(function (dot) {
@@ -223,5 +225,60 @@
 
     
 </script>
-</body>
-</html>
+
+{% comment %} <script>
+    // Function to display the folder structure
+    function renderFolderStructure(folders, files, parentPath) {
+      const fileSystemDiv = document.getElementById('file-system');
+      fileSystemDiv.innerHTML = ''; // Clear current contents
+
+      folders.forEach(folder => {
+        const folderCard = document.createElement('div');
+        folderCard.classList.add('folder-card');
+        folderCard.innerHTML = `
+          <div class="folder-icon">
+            <i class="fas fa-folder"></i>
+          </div>
+          <div class="folder-name">
+            <span onclick="loadFolder('${parentPath}${folder}')">${folder}</span>
+          </div>
+        `;
+        fileSystemDiv.appendChild(folderCard);
+      });
+
+      files.forEach(file => {
+        const fileCard = document.createElement('div');
+        fileCard.classList.add('file-card');
+        fileCard.innerHTML = `
+          <div class="file-preview">
+            <div class="file-icon">
+              <i class="fas fa-file"></i>
+            </div>
+          </div>
+          <div class="file-info">
+            <div class="file-name">
+              <span>${file}</span>
+            </div>
+          </div>
+        `;
+        fileSystemDiv.appendChild(fileCard);
+      });
+    }
+
+    // Function to load a folder
+    function loadFolder(path) {
+      fetch(`/get_file_system/?path=${path}`)
+        .then(response => response.json())
+        .then(data => {
+          renderFolderStructure(data.folders, data.files, path + '/');
+        })
+        .catch(error => console.error('Error loading folder:', error));
+    }
+
+    // Load the root folder structure initially
+    window.onload = function() {
+      loadFolder('');
+    };
+</script> {% endcomment %}
+
+{% endblock %}

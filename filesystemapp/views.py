@@ -10,6 +10,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from datetime import timedelta
+import os
+from django.conf import settings
 
 
 def register(request):
@@ -135,7 +137,6 @@ def rename_item(request):
             else:
                 return HttpResponse("Invalid file name", status=400)
 
-        # Redirect to the current path (same as the referring page)
         return redirect("/")
 
     return HttpResponse("Invalid request", status=400)
@@ -151,17 +152,17 @@ class FileCreateListView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         path = self.request.GET.get("path" ) or "root"  
+        print(path, "PP")
         parent_folder = None
         if path:
             parent_folder = Folder.objects.filter(name=path).first()
-        print(parent_folder, "parent_folder")
         files = File.objects.filter(folder=parent_folder)
         subfolders = Folder.objects.filter(parent=parent_folder)
         context['files'] = files
         context['folders'] = subfolders
         context['current_path'] = parent_folder
+        print(subfolders, "sub")
         return context
-    
 
     def post(self, request, *args, **kwargs):
         if "folder_name" in self.request.POST:  
@@ -186,3 +187,4 @@ class FileCreateListView(CreateView):
                 )
 
             return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')
+        
