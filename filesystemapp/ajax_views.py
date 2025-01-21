@@ -1,7 +1,6 @@
 
 import tarfile
-from .models import Folder, File
-from django.contrib.auth.models import User
+from .models import Folder, File, CustomUser
 import os
 import shutil
 from django.core.files.storage import default_storage
@@ -109,11 +108,10 @@ def file_explorer(request):
                 folder_names = path.split("/")  
                 parent_folder = None
                 for folder_name in folder_names:
-                    parent_folder = Folder.objects.filter(name=folder_name, parent=parent_folder).first()
+                    parent_folder = Folder.objects.filter(name=folder_name, parent=parent_folder, user=request.user).first()
 
-            files = File.objects.filter(folder=parent_folder) 
-            subfolders = Folder.objects.filter(parent=parent_folder) 
-            print(f"Subfolders: {list(subfolders.values('name'))}, Files: {list(files.values('name'))}")
+            files = File.objects.filter(folder=parent_folder, user=request.user) 
+            subfolders = Folder.objects.filter(parent=parent_folder, user=request.user) 
 
             return JsonResponse({
                 "files": list(files.values('name')),

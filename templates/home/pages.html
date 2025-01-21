@@ -4,7 +4,9 @@
 {% load custom_tags %}
 
 {% block css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% comment %} <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> {% endcomment %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 
@@ -27,8 +29,9 @@
                     <button id="create-folder" style= "font-size: large">Create Folder</button>
                     <button id="upload-file" style= "font-size: large" >Upload File</button>
                     <button id="download-all-zip" data-folder="folder-name" style= "font-size: large" >Download All</button>
+                    <a href="{% url 'shared-documents'%}" id="shared-with-me"  style= "font-size: large; color: white; text-decoration: none;" >Shared Documents</a>
                 </div> 
-             </header>
+            </header>
             
             
             <div id="file-system">
@@ -47,10 +50,21 @@
                                 </form>
                             </div>
                              <div class="dropdown-item download">
-                                <a href="{% url 'download-zip' name=folder.name %}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
                                     <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
                                     <span>Download</span>
                                 </a>
+                            </div> 
+                              <div class="dropdown-item share">
+                                <form method="post" action="{% url 'get-file-system' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="{% if folder.is_shared %}stop_share_folder{% else %}share_folder{% endif %}" value="{{ folder.name }}">
+                                    <input type="hidden" name="path" value="{{ current_path.name }}">
+                                    <button type="submit"  style="display: inline-flex; color: black; text-decoration: none;background: none;  ">
+                                        <i class=" fas fa-share " style="color: black; margin-right: 9px;"></i>
+                                        <span>{% if folder.is_shared %} Stop Sharing {% else %} Share {% endif %} </span>
+                                    </button>
+                                </form>
                             </div> 
 
                         </div>
@@ -87,6 +101,24 @@
                                     <span>Download</span>
                                 </a>
                             </div>
+
+                            <div class="dropdown-item share">
+                                <form method="post" action="{% url 'get-file-system' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="{% if file.is_shared %}stop_share_file{% else %}share_file{% endif %}" value="{{ file.name }}">
+                                    <input type="hidden" name="path" value="{{ current_path.name}}">
+                                    <button type="submit" style="display: inline-flex; color: black; text-decoration: none;">
+                                        {% if file.is_shared %}
+                                            <i class="fa-solid fa-ban" style="color: red; margin-right: 9px;"></i>
+                                            <span>Stop Sharing</span>
+                                        {% else %}
+                                            <i class="fas fa-share" style="color: black; margin-right: 9px;"></i>
+                                            <span>Share</span>
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div> 
+  
                             
                         </div>
                     </div>
@@ -116,11 +148,11 @@
                 {% endfor %}
             </div>
                     
-        {% comment %} </main> {% endcomment %}
+        </main>
     </div>
 
     <div id="createFolderModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content ">
             <h2>Create a New Folder</h2>
             <form method="POST">
                 {% csrf_token %}
@@ -148,9 +180,46 @@
         </div>
     </div>
 
+    {% comment %} <div id="sharedWithMeModal" class="sharedModal" >
+        <div class="shared-modal-content">
+            <h2 style="margin-top: 5px">Shared Documents</h2>
+            <hr>
+            <div class="folder-container">
+                {% for folder in shared_folders %}
+                <div class="folder-card">
+                    <div class="three-dots">
+                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                        <div class="dropdown-menu" style="display: none;">
+                            <div class="dropdown-item download">
+                                <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary" style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i>
+                                    <span>Download</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'get-file-system' %}?path={{ folder.path }}">
+                        <div class="folder-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="folder-name">
+                            <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="closeSharedWithMeModalBtn">Close</button>
+
+        </div>
+    </div> {% endcomment %}
+
+
+
 {% endblock %}
 
 {% block extra_js %}
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -168,6 +237,8 @@
 <script>
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
+        console.log(modal, "modjhgal")
+
         if (modal) {
             modal.style.display = "flex";
         }
@@ -175,6 +246,7 @@
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
+        console.log(modal, "modal")
         if (modal) {
             modal.style.display = "none";
         }
@@ -194,6 +266,8 @@
     document.getElementById("upload-file")?.addEventListener("click", function() {
         openModal("uploadFileModal");
     });
+
+
 </script>
 <script>
     document.querySelectorAll('.three-dots').forEach(function (dot) {

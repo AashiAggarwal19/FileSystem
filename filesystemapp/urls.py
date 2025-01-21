@@ -9,6 +9,7 @@ urlpatterns = [
     path('delete-folder/', views.delete_folder, name='delete-folder'),    
     path("rename-item/", views.rename_item, name="rename-item"),
     path("", views.FileCreateListView.as_view(), name="get-file-system"),
+    path("shared-documents/", views.SharedDocumentsListView.as_view(), name="shared-documents"),
 
 
     

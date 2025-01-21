@@ -1,0 +1,120 @@
+{% extends 'elements/base.html' %}
+<title>Shared Documents</title>
+{% load static %}
+{% load custom_tags %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="dashboardd">
+    <main class="main-content">
+        <h2 >Shared Documents</h2>
+        <div class="folder-container">
+            {% for folder in shared_folders %}
+            <div class="folder-card">
+                <div class="three-dots">
+                    <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                    <div class="dropdown-menu" style="display: none;">
+                        <div class="dropdown-item download">
+                            <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary" style="display:inline-flex;color:black; text-decoration: none;">
+                                <i class="fas fa-download" style="color: black; margin-right: 9px;"></i>
+                                <span>Download</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'shared-documents' %}?path={{ folder.name }}">
+                    <div class="folder-icon">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                    <div class="folder-name">
+                        <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+
+            {% for file in files %}
+                <div class="file-card">
+                    <div class="three-dots">
+                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                        <div class="dropdown-menu" style="display: none;">
+                            <div class="dropdown-item download">
+                                <a href="{{ file.file.url }}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
+                                    <span>Download</span>
+                                </a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="file-preview">
+                        <div class="file-icon">
+                        {% if file.name|file_type == 'text' %}
+                        <i class="fas fa-file-alt" style="color: #6c757d;"></i>
+                        {% elif file.name|file_type == 'code' %}
+                            <i class="fas fa-code" style="color: #007bff;"></i>
+                        {% elif file.name|file_type == 'excel' %}
+                            <i class="fas fa-file-excel" style="color: #28a745;"></i>
+                        {% elif file.name|file_type == 'pdf' %}
+                            <i class="fas fa-file-pdf" style="color: #dc3545;"></i>
+                        {% elif file.name|file_type == 'word' %}
+                        <i class="fas fa-file-word" style="color: #007bff;"></i>
+                        {% else %}
+                            <i class="fas fa-file" style="color: #6c757d;"></i>
+                        {% endif %}
+                        </div>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">
+                            <span id="file-name-{{ file.name }}">{{ file.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+        </div>
+ 
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.querySelectorAll('.three-dots').forEach(function (dot) {
+        dot.addEventListener('click', function (event) {
+            event.stopPropagation();
+
+            const dropdownMenu = dot.querySelector('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            }
+        });
+    });
+
+    document.querySelectorAll('.dropdown-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            // Hide the dropdown menu
+            const dropdownMenu = item.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.display = 'none';
+            }
+        });
+    });
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown-menu').forEach(function (dropdownMenu) {
+            dropdownMenu.style.display = 'none';
+        });
+    });
+
+    
+</script>
+{% endblock %}
+
+
+

@@ -8,16 +8,6 @@
   <link rel="stylesheet" href="{% static 'css/authentication.css' %}"></head>
 <body>
     <div class="wrapper">
-        {% if messages %}
-          <div class="message-container">
-            {% for message in messages %}
-              <div class="message error">
-                <span class="message-icon">⚠️</span> 
-                <span class="message-text">{{ message }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
         <h2>Registration</h2>
         <form method="POST" action="{% url 'register' %}">
           {% csrf_token %}
