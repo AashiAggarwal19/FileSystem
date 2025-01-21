@@ -35,47 +35,18 @@ header {
     background-color: #2b3752;
 }
 
-/* File Grid */
-.file-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-}
-
-.file-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-align: center;
-}
-
-.file-item img {
-    max-width: 100px;
-    margin-bottom: 10px;
-}
-
-.file-item p {
-    word-wrap: break-word;
-}
-
-.folder-card {
-   
+.folder-card, .file-card {
     position: relative;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-    margin: 10px;
+    margin: 10px; 
     display: inline-block;
-    width: 150px;
-    height: 130px;
     text-align: center;
     cursor: pointer;
+    background-color: #f9f9f9;
+
+
 }
 .folder-icon i {
     font-size: 50px;
@@ -201,26 +172,25 @@ button:hover {
     color: white;
 }
 
+.folder-card {
+    width: 150px; 
+    height: 130px;
+    padding: 20px;
+
+}
+
 .file-card {
-    position: relative;
-    /* justify-content: center; */
-    width: 200px;
-    height: 180px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    width: 150px; 
+    height: 130px; 
+    padding: 20px; 
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background-color: #fff;
-    cursor: pointer;
 }
 
 
 
 .file-preview {
-    height: 105px;
-    background-color: #f9f9f9;
+    height: 70px;
+    /* background-color: #f9f9f9; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -228,10 +198,6 @@ button:hover {
 
 .file-icon {
     font-size: 48px;
-}
-
-.file-info {
-    padding: 10px;
 }
 
 .file-name {
@@ -309,13 +275,38 @@ button:hover {
     padding: 8px 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 14px;
     cursor: pointer;
 }
+.dropdown-item i {
+    flex-shrink: 0; 
+    font-size: 16px; 
+}
 
+.dropdown-item span {
+    flex-grow: 1; 
+    font-size: 14px; 
+    color: #333;
+    text-align: left; 
+}
 .dropdown-item:hover {
     background: #f1f1f1;
+}
+.dropdown-item button {
+    all: unset; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%; 
+}
+
+.dropdown-item a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%; 
 }
 
 .folder-card:hover .dropdown-menu,

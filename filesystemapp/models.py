@@ -72,11 +72,4 @@ class OTP(models.Model):
     def is_expired(self):
         expiration_time = self.generated_at + timedelta(minutes=5)  
         return timezone.now() > expiration_time
-    
-class SharedFilePath(models.Model):
-    file = models.OneToOneField(File, on_delete=models.CASCADE, related_name='shared_path')
-    path = models.CharField(max_length=1024)  
-    shared_by = models.ManyToManyField(CustomUser, related_name='shared_file_paths')
 
-    def __str__(self):
-        return f"{self.file.name} ({self.path})"

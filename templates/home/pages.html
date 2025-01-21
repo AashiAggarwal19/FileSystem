@@ -61,8 +61,13 @@
                                     <input type="hidden" name="{% if folder.is_shared %}stop_share_folder{% else %}share_folder{% endif %}" value="{{ folder.name }}">
                                     <input type="hidden" name="path" value="{{ current_path.name }}">
                                     <button type="submit"  style="display: inline-flex; color: black; text-decoration: none;background: none;  ">
-                                        <i class=" fas fa-share " style="color: black; margin-right: 9px;"></i>
-                                        <span>{% if folder.is_shared %} Stop Sharing {% else %} Share {% endif %} </span>
+                                        {% if folder.is_shared %}
+                                            <i class="fa-solid fa-ban" style="color: red; margin-right: 9px;"></i>
+                                            <span>Stop Sharing</span>
+                                        {% else %}
+                                            <i class="fas fa-share" style="color: black; margin-right: 9px;"></i>
+                                            <span>Share</span>
+                                        {% endif %}
                                     </button>
                                 </form>
                             </div> 
@@ -300,59 +305,17 @@
     
 </script>
 
-{% comment %} <script>
-    // Function to display the folder structure
-    function renderFolderStructure(folders, files, parentPath) {
-      const fileSystemDiv = document.getElementById('file-system');
-      fileSystemDiv.innerHTML = ''; // Clear current contents
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
 
-      folders.forEach(folder => {
-        const folderCard = document.createElement('div');
-        folderCard.classList.add('folder-card');
-        folderCard.innerHTML = `
-          <div class="folder-icon">
-            <i class="fas fa-folder"></i>
-          </div>
-          <div class="folder-name">
-            <span onclick="loadFolder('${parentPath}${folder}')">${folder}</span>
-          </div>
-        `;
-        fileSystemDiv.appendChild(folderCard);
-      });
-
-      files.forEach(file => {
-        const fileCard = document.createElement('div');
-        fileCard.classList.add('file-card');
-        fileCard.innerHTML = `
-          <div class="file-preview">
-            <div class="file-icon">
-              <i class="fas fa-file"></i>
-            </div>
-          </div>
-          <div class="file-info">
-            <div class="file-name">
-              <span>${file}</span>
-            </div>
-          </div>
-        `;
-        fileSystemDiv.appendChild(fileCard);
-      });
-    }
-
-    // Function to load a folder
-    function loadFolder(path) {
-      fetch(`/get_file_system/?path=${path}`)
-        .then(response => response.json())
-        .then(data => {
-          renderFolderStructure(data.folders, data.files, path + '/');
-        })
-        .catch(error => console.error('Error loading folder:', error));
-    }
-
-    // Load the root folder structure initially
-    window.onload = function() {
-      loadFolder('');
-    };
-</script> {% endcomment %}
-
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files.length > 0) {
+            const fileNames = Array.from(fileInput.files).map(file => file.name).join(', ');
+            fileNameDisplay.textContent = fileNames;
+        } else {
+            fileNameDisplay.textContent = 'No file chosen';
+        }
+    });
+</script>
 {% endblock %}

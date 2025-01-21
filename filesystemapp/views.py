@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import Folder, File, CustomUser, OTP, SharedFilePath
+from .models import Folder, File, CustomUser, OTP
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -28,7 +28,6 @@ def send_otp(phone_number):
     data = f'sender_id=MOAPPP&message={msg}&variables_values={otp}&route=dlt&numbers={phone_number}'
     
     response = requests.post(url, headers=headers, data=data)
-    print(response.json(), "kjbkjbghjn")
     if response.status_code == 200:
         OTP.objects.update_or_create(
             phone_number=phone_number,
@@ -176,10 +175,6 @@ class FileCreateListView(CreateView):
         subfolders = Folder.objects.filter(parent=parent_folder, user=self.request.user)
         shared_folders = Folder.objects.filter(shared_by=self.request.user,parent=parent_folder).exclude(user=self.request.user)
 
-        shared_file_paths = SharedFilePath.objects.filter(path=path)
-        shared_files = [shared.file for shared in shared_file_paths]
-
-
         for folder in subfolders:
             folder.is_shared = folder.shared_by.exists()
         
@@ -227,8 +222,6 @@ class FileCreateListView(CreateView):
 
                 def share_subfolders_and_files(parent_folder):
                     subfolders = Folder.objects.filter(parent=parent_folder)
-                    print(subfolders, "subbbbbbbbbdgydhwvdgwdgv")
-
                     for subfolder in subfolders:
                         subfolder.shared_by.set(all_users)
                         share_subfolders_and_files(subfolder)  
@@ -242,9 +235,11 @@ class FileCreateListView(CreateView):
             file_name = request.POST.get('share_file')
             try:
                 file = File.objects.get(name=file_name, user=request.user)
-                all_users = CustomUser.objects.exclude(id=request.user.id)
+                all_users = CustomUser.objects.exclude(id=request.user.id).values_list('id',flat=True)
+                folder = file.folder
+                if folder:
+                    folder.shared_by.set(all_users)
                 file.shared_by.set(all_users)
-
                 return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')
             except File.DoesNotExist:
                 return HttpResponseRedirect(request.path_info + f'?path={request.GET.get("path", "root")}')
@@ -287,10 +282,10 @@ class SharedDocumentsListView(CreateView):
             parent_folder = None  
         else:
             parent_folder = Folder.objects.filter(name=path).first()
-        files = File.objects.filter(folder=parent_folder, shared_by=self.request.user)
+
+        files = File.objects.filter(folder=parent_folder, shared_by=self.request.user)      
         shared_folders = Folder.objects.filter(shared_by=self.request.user,parent=parent_folder).exclude(user=self.request.user)
         context['files'] = files
-        # context['folders'] = subfolders
         context['current_path'] = parent_folder
         context['shared_folders'] = shared_folders
         return context

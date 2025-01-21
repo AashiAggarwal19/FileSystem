@@ -102,7 +102,6 @@ def download_zip(request, name):
 def file_explorer(request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             path = request.GET.get("path") or "root"
-            print(path, "path")
             parent_folder = None
             if path != "root":
                 folder_names = path.split("/")  
