@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Home Page{% endblock %}</title>
+        {% load static %}
+        {% block css %}
+        {% endblock %}
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        
+</head>
+<body>
+    <div class="layout">
+        <div class="content-wrapper">
+            {% include 'home/sidebar.html' %}
+            <main class="main-content">
+                {% block content %}
+                <!-- Page-specific content goes here -->
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+{% block extra_js %}
+
+{% endblock %}
+
+</body>
+</html>

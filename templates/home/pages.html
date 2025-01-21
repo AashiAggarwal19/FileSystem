@@ -1,0 +1,358 @@
+{% extends 'elements/base.html' %}
+<title>Home</title>
+{% load static %}
+{% load custom_tags %}
+
+{% block css %}
+{% comment %} <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> {% endcomment %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+    <div class="dashboard">
+         <main class="main-content"> 
+            <header class="navbar">
+                <div class="breadcrumb">
+                    <span class="breadcrumb-text"> 
+                        {% if current_path %}
+                            {{ current_path }}
+                        {% else %}
+                            Home
+                        {% endif %}
+                    </span>
+                </div> 
+            
+                 <div class="actions">
+                    <button id="create-folder" style= "font-size: large">Create Folder</button>
+                    <button id="upload-file" style= "font-size: large" >Upload File</button>
+                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: large" >Download All</button>
+                    <a href="{% url 'shared-documents'%}" id="shared-with-me"  style= "font-size: large; color: white; text-decoration: none;" >Shared Documents</a>
+                </div> 
+            </header>
+            
+            
+            <div id="file-system">
+                {% for folder in folders %}
+                <div class="folder-card">
+                    <div class="three-dots">
+                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                        <div class="dropdown-menu" style="display: none;">
+                            <div class="dropdown-item delete">
+                                <form method="post" action="{% url 'delete-folder' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="path" value="{{ folder.name }}">
+                                    <button type="submit" style="border: none; background: none; padding: 0; margin: 0;" class="action-btn download-btn">
+                                        <i class="fas fa-trash" style="color: red;"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                             <div class="dropdown-item download">
+                                <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
+                                    <span>Download</span>
+                                </a>
+                            </div> 
+                              <div class="dropdown-item share">
+                                <form method="post" action="{% url 'get-file-system' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="{% if folder.is_shared %}stop_share_folder{% else %}share_folder{% endif %}" value="{{ folder.name }}">
+                                    <input type="hidden" name="path" value="{{ current_path.name }}">
+                                    <button type="submit"  style="display: inline-flex; color: black; text-decoration: none;background: none;  ">
+                                        <i class=" fas fa-share " style="color: black; margin-right: 9px;"></i>
+                                        <span>{% if folder.is_shared %} Stop Sharing {% else %} Share {% endif %} </span>
+                                    </button>
+                                </form>
+                            </div> 
+
+                        </div>
+                    </div>
+                    <a href="{% url 'get-file-system' %}?path={{ folder.name }}">
+                        <div class="folder-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="folder-name">
+                            <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
+                            
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            
+                {% for file in files %}
+                <div class="file-card">
+                    <div class="three-dots">
+                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                        <div class="dropdown-menu" style="display: none;">
+                            <div class="dropdown-item delete">
+                                <form method="post" action="{% url 'delete-folder' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="path" value="{{ file.id }}">
+                                    <button type="submit" style="border: none; background: none; padding: 0; margin: 0;">
+                                        <i class="fas fa-trash" style="color: red; margin-right: 8px;"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item download">
+                                <a href="{{ file.file.url }}" class="btn btn-primary " style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i> 
+                                    <span>Download</span>
+                                </a>
+                            </div>
+
+                            <div class="dropdown-item share">
+                                <form method="post" action="{% url 'get-file-system' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="{% if file.is_shared %}stop_share_file{% else %}share_file{% endif %}" value="{{ file.name }}">
+                                    <input type="hidden" name="path" value="{{ current_path.name}}">
+                                    <button type="submit" style="display: inline-flex; color: black; text-decoration: none;">
+                                        {% if file.is_shared %}
+                                            <i class="fa-solid fa-ban" style="color: red; margin-right: 9px;"></i>
+                                            <span>Stop Sharing</span>
+                                        {% else %}
+                                            <i class="fas fa-share" style="color: black; margin-right: 9px;"></i>
+                                            <span>Share</span>
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div> 
+  
+                            
+                        </div>
+                    </div>
+                    <div class="file-preview">
+                        <div class="file-icon">
+                        {% if file.name|file_type == 'text' %}
+                        <i class="fas fa-file-alt" style="color: #6c757d;"></i>
+                        {% elif file.name|file_type == 'code' %}
+                            <i class="fas fa-code" style="color: #007bff;"></i>
+                        {% elif file.name|file_type == 'excel' %}
+                            <i class="fas fa-file-excel" style="color: #28a745;"></i>
+                        {% elif file.name|file_type == 'pdf' %}
+                            <i class="fas fa-file-pdf" style="color: #dc3545;"></i>
+                        {% elif file.name|file_type == 'word' %}
+                        <i class="fas fa-file-word" style="color: #007bff;"></i>
+                        {% else %}
+                            <i class="fas fa-file" style="color: #6c757d;"></i>
+                        {% endif %}
+                        </div>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">
+                            <span id="file-name-{{ file.name }}">{{ file.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+                    
+        </main>
+    </div>
+
+    <div id="createFolderModal" class="modal">
+        <div class="modal-content ">
+            <h2>Create a New Folder</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="text" name="folder_name" id="newFolderName" placeholder="Enter folder name" required />
+                <button type="submit" id="createFolderBtn">Create</button>
+                <button type="button" id="closeModalBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="uploadFileModal" class="modal">
+        <div class="modal-content">
+            <h2>Upload File</h2>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="file" id="fileInput" multiple required hidden/> 
+                <label for="fileInput" id="customFileInput">
+                    <i class="fas fa-upload"></i> Choose Files
+                </label>
+    
+                <div id="fileNameDisplay">No file chosen</div>               
+                <button type="submit" id="uploadFileBtn">Upload</button>
+                <button type="button" id="closeUploadModalBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    {% comment %} <div id="sharedWithMeModal" class="sharedModal" >
+        <div class="shared-modal-content">
+            <h2 style="margin-top: 5px">Shared Documents</h2>
+            <hr>
+            <div class="folder-container">
+                {% for folder in shared_folders %}
+                <div class="folder-card">
+                    <div class="three-dots">
+                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
+                        <div class="dropdown-menu" style="display: none;">
+                            <div class="dropdown-item download">
+                                <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary" style="display:inline-flex;color:black; text-decoration: none;">
+                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i>
+                                    <span>Download</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'get-file-system' %}?path={{ folder.path }}">
+                        <div class="folder-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="folder-name">
+                            <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="closeSharedWithMeModalBtn">Close</button>
+
+        </div>
+    </div> {% endcomment %}
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.getElementById("download-all-zip").addEventListener("click", function () {
+            window.location.href = `/download-all-zip/`;  
+        });
+</script>
+<script>
+    function stopAnchorClick(event) {
+        event.stopPropagation(); 
+        event.preventDefault(); 
+    }
+</script>
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        console.log(modal, "modjhgal")
+
+        if (modal) {
+            modal.style.display = "flex";
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        console.log(modal, "modal")
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    document.getElementById("closeModalBtn")?.addEventListener("click", function() {
+        closeModal("createFolderModal");
+    });
+
+    document.getElementById("closeUploadModalBtn")?.addEventListener("click", function() {
+        closeModal("uploadFileModal");
+    });
+    document.getElementById("create-folder")?.addEventListener("click", function() {
+        openModal("createFolderModal");
+    });
+
+    document.getElementById("upload-file")?.addEventListener("click", function() {
+        openModal("uploadFileModal");
+    });
+
+
+</script>
+<script>
+    document.querySelectorAll('.three-dots').forEach(function (dot) {
+        dot.addEventListener('click', function (event) {
+            event.stopPropagation();
+
+            const dropdownMenu = dot.querySelector('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            }
+        });
+    });
+
+    document.querySelectorAll('.dropdown-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            // Hide the dropdown menu
+            const dropdownMenu = item.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.display = 'none';
+            }
+        });
+    });
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown-menu').forEach(function (dropdownMenu) {
+            dropdownMenu.style.display = 'none';
+        });
+    });
+
+    
+</script>
+
+{% comment %} <script>
+    // Function to display the folder structure
+    function renderFolderStructure(folders, files, parentPath) {
+      const fileSystemDiv = document.getElementById('file-system');
+      fileSystemDiv.innerHTML = ''; // Clear current contents
+
+      folders.forEach(folder => {
+        const folderCard = document.createElement('div');
+        folderCard.classList.add('folder-card');
+        folderCard.innerHTML = `
+          <div class="folder-icon">
+            <i class="fas fa-folder"></i>
+          </div>
+          <div class="folder-name">
+            <span onclick="loadFolder('${parentPath}${folder}')">${folder}</span>
+          </div>
+        `;
+        fileSystemDiv.appendChild(folderCard);
+      });
+
+      files.forEach(file => {
+        const fileCard = document.createElement('div');
+        fileCard.classList.add('file-card');
+        fileCard.innerHTML = `
+          <div class="file-preview">
+            <div class="file-icon">
+              <i class="fas fa-file"></i>
+            </div>
+          </div>
+          <div class="file-info">
+            <div class="file-name">
+              <span>${file}</span>
+            </div>
+          </div>
+        `;
+        fileSystemDiv.appendChild(fileCard);
+      });
+    }
+
+    // Function to load a folder
+    function loadFolder(path) {
+      fetch(`/get_file_system/?path=${path}`)
+        .then(response => response.json())
+        .then(data => {
+          renderFolderStructure(data.folders, data.files, path + '/');
+        })
+        .catch(error => console.error('Error loading folder:', error));
+    }
+
+    // Load the root folder structure initially
+    window.onload = function() {
+      loadFolder('');
+    };
+</script> {% endcomment %}
+
+{% endblock %}
