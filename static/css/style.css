@@ -1,9 +1,14 @@
-/* General layout */
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
     display: flex;
-    flex-direction: column;
+    background-color: rgb(230, 235, 239);
+    flex-direction: row;
+    font-family: Arial, sans-serif;
 }
 
 .layout {
@@ -19,118 +24,152 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 200px;
-    background: #111827;
-    color: #fff;
+    width: 230px;
+    background: white;
+    color: black;
     display: flex;
     flex-direction: column;
     padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   }
-  
-  .sidebar-header {
+  .sidebar .d-flex {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
-  }
-  
-  .sidebar-header .logo img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  
-  .sidebar-header h3 {
-    font-size: 1.2rem;
+}
+
+.sidebar img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px; 
+}
+
+.sidebar .sidebar-title {
+    font-size: 18px; 
     font-weight: bold;
-  }
-  
-  .menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .menu li {
-    margin-bottom: 15px;
-  }
-  
-  .menu li a {
-    color: #9CA3AF;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 5px;
-    transition: background 0.3s;
-  }
-  
-  .menu li a.active, .menu li a:hover {
-    background: #2b3752;
-    color: #fff;
-  }
-  
-  .menu li a .icon {
-    margin-right: 10px;
-    font-size: 1.2rem;
-  }
-  
-  .file-browser {
-    margin-top: 100px;
-    margin-left: 5px;
-  }
-  
-  .file-browser h4 {
-    margin-bottom: 15px;
-    font-size: larger;
-    color: white;
-  }
-  
-  .file-browser ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .file-browser ul li {
-    margin-bottom: 10px;
-  }
-  
-  .file-browser ul li a {
-    color: #9CA3AF;
-    text-decoration: none;
-    font-size: 0.9rem;
-    display: block;
-    padding: 5px;
-    border-radius: 5px;
-    transition: background 0.3s;
-  }
-  
-  .file-browser ul li a:hover {
-    background: #374151;
-  }
-  
-  .content {
-    flex: 1;
-    padding: 20px;
-    background: #F3F4F6;
-  }
+    color: black;
+}
 
+.file-browser {
+  margin-top: 35px;
+  margin-left: 5px;
+}
 
+.file-browser h4 {
+  margin-bottom: 15px;
+  font-size: larger;
+  color: black;
+}
+
+.file-browser ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.file-browser ul li {
+  margin-bottom: 10px;
+}
+
+.file-browser ul li a {
+  color: #9CA3AF;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: block;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.file-browser ul li a:hover {
+  background: #374151;
+}
+
+.content {  
+  margin-left: 231px;
+  padding: 20px;
+  background: #F3F4F6;
+  min-height: 100vh;
+}
 
 .navbar {
-    background-color: #111827; 
+    width: calc(100% - 230px);
+    background-color: rgb(254, 254, 254); 
     padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #ddd;
     position: fixed;  
     top: 0;
-    left: 0;
-    right: 0;
+    left: 231px;
     z-index: 1000;
-    height: 70px;
+    height: 80px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+}
+.navbar .actions {
+  display: flex;
+  align-items: center; 
+  gap: 15px; 
+  margin-left: auto; 
+}
+.navbar .actions button,
+.navbar .actions a{
+  background-color: transparent; 
+    font-size: large;
+    padding: 8px 16px;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+}
+
+.navbar .actions button:hover,
+.navbar .actions a:hover {
+    background-color: #dadce0;
+}
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        height: auto;
+        width: 100%;
+        left: 0;
+    }
+
+    .navbar .actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+        margin-left: 0;
+        align-items: flex-start;
+    }
+
+    .navbar .actions button,
+    .navbar .actions a {
+        width: 100%;
+        text-align: left;
+        font-size: 1rem;
+        padding: 10px;
+    }
+
+    .content {
+        margin-left: 0;
+        margin-top: 100px; 
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar .actions button,
+    .navbar .actions a {
+        font-size: 0.9rem;
+        padding: 8px 10px;
+    }
 }
 .file-text{
     font-size: 15px;
@@ -149,11 +188,6 @@ body {
     text-align: center;
     color: white;
     padding: 10px;
-    
-
 }
-
-
-/* pages */
 
 

@@ -6,21 +6,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sidebar Design</title>
-  <style>
-  #file-explorer {
+
+<style>
+#file-explorer {
     list-style-type: none;
     padding-left: 0;
-    font-family: Arial, sans-serif;
     font-size: 12px;
+    margin-left: -15px
 }
-
 #file-explorer li {
     display: block;
     margin: 28px 10px;
     padding-left : 5px;
     transition: background-color 0.2s ease;
     cursor: pointer;
-}
+    border-radius: 5px;
+} 
+
 .sidebar-folder-icon {
     margin-right: 8px;
     color: #ffa726; 
@@ -35,7 +37,7 @@
 .folder-toggle {
     width: 20px;
     cursor: pointer;
-    color: white;
+    color: black;
     text-align: center;
     font-size: 14px;
     margin-right: 8px;
@@ -47,7 +49,7 @@
 
 .sidebar-folder-name {
     cursor: pointer;
-    color: white;
+    color: black;
     font-size: 17px;
 }
 
@@ -68,22 +70,19 @@
 </head>
 <body>
     <div class="sidebar">
-        <div class="file-browser" >
-          <h4>File Browser</h4>
-          <ul id="file-explorer" data-current-path="root ">
-            <!-- Folder and file structure will be populated dynamically -->
-          </ul>
-          <!-- <h4>Shared Documents</h4>
-          <ul id="shared-documents" >
-            
-            {% for folder in shared_folders %}
-            <li>
-                <a href="?path={{ share_folder }}">{{ folder.name }}</a>
-            </li>
-            {% endfor %}
-          </ul> -->
+        <div class="d-flex align-items-center mb-2">
+            <img src="{% static 'images/docs-logo.png' %}" alt="File Explorer" 
+                style="width: 100px; height: 100px; margin-right: 0px;margin-top:-20px;margin-left:-25px" />
+            <span class="sidebar-title">DOCS App</span>
         </div>
-      </div>
+        
+        <div class="file-browser">
+            <h4>File Browser</h4>
+            <ul id="file-explorer" data-current-path="root ">
+            <!-- Folder and file structure will be populated dynamically -->
+            </ul>
+        </div>
+    </div>
 
 <script>
  document.addEventListener("DOMContentLoaded", () => {

@@ -15,24 +15,13 @@
     <div class="dashboard">
          <main class="main-content"> 
             <header class="navbar">
-                <div class="breadcrumb">
-                    <span class="breadcrumb-text"> 
-                        {% if current_path %}
-                            {{ current_path }}
-                        {% else %}
-                            Home
-                        {% endif %}
-                    </span>
-                </div> 
-            
                  <div class="actions">
-                    <button id="create-folder" style= "font-size: large">Create Folder</button>
-                    <button id="upload-file" style= "font-size: large" >Upload File</button>
-                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: large" >Download All</button>
-                    <a href="{% url 'shared-documents'%}" id="shared-with-me"  style= "font-size: large; color: white; text-decoration: none;" >Shared Documents</a>
+                    <button id="create-folder" style= "font-size: large;font-weight: bold">Create Folder</button>
+                    <button id="upload-file" style= "font-size: large;font-weight: bold" >Upload File</button>
+                    <button id="download-all-zip" data-folder="folder-name" style= "font-size: large;font-weight: bold" >Download All</button>
+                    <a href="{% url 'shared-documents'%}" id="shared-with-me"  style= "font-size: large; font-weight: bold;color: black; text-decoration: none;" >Shared Documents</a>
                 </div> 
             </header>
-            
             
             <div id="file-system">
                 {% for folder in folders %}
