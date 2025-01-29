@@ -150,7 +150,7 @@
             <h2>Create a New Folder</h2>
             <form method="POST">
                 {% csrf_token %}
-                <input type="text" name="folder_name" id="newFolderName" placeholder="Enter folder name" required />
+                <input type="text" name="folder_name" id="newFolderName" maxlength="15" placeholder="Enter folder name" required />
                 <button type="submit" id="createFolderBtn">Create</button>
                 <button type="button" id="closeModalBtn">Cancel</button>
             </form>
@@ -160,53 +160,20 @@
     <div id="uploadFileModal" class="modal">
         <div class="modal-content">
             <h2>Upload File</h2>
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
                 {% csrf_token %}
                 <input type="file" name="file" id="fileInput" multiple required hidden/> 
                 <label for="fileInput" id="customFileInput">
                     <i class="fas fa-upload"></i> Choose Files
                 </label>
     
-                <div id="fileNameDisplay">No file chosen</div>               
+                <div id="fileNameDisplay">No file chosen</div>
+                <p id="fileSizeError" style="color: red; display: none;"></p>                            
                 <button type="submit" id="uploadFileBtn">Upload</button>
                 <button type="button" id="closeUploadModalBtn">Cancel</button>
             </form>
         </div>
     </div>
-
-    {% comment %} <div id="sharedWithMeModal" class="sharedModal" >
-        <div class="shared-modal-content">
-            <h2 style="margin-top: 5px">Shared Documents</h2>
-            <hr>
-            <div class="folder-container">
-                {% for folder in shared_folders %}
-                <div class="folder-card">
-                    <div class="three-dots">
-                        <i class="fa fa-ellipsis-v" style="padding:5px"></i>
-                        <div class="dropdown-menu" style="display: none;">
-                            <div class="dropdown-item download">
-                                <a href="{% url 'download-zip' folder.name %}" class="btn btn-primary" style="display:inline-flex;color:black; text-decoration: none;">
-                                    <i class="fas fa-download" style="color: black; margin-right: 9px;"></i>
-                                    <span>Download</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <a href="{% url 'get-file-system' %}?path={{ folder.path }}">
-                        <div class="folder-icon">
-                            <i class="fas fa-folder"></i>
-                        </div>
-                        <div class="folder-name">
-                            <span id="folder-name-{{ folder.name }}">{{ folder.name }}</span>
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" id="closeSharedWithMeModalBtn">Close</button>
-
-        </div>
-    </div> {% endcomment %}
 
 
 
@@ -277,7 +244,6 @@
 
     document.querySelectorAll('.dropdown-item').forEach(function (item) {
         item.addEventListener('click', function () {
-            // Hide the dropdown menu
             const dropdownMenu = item.closest('.dropdown-menu');
             if (dropdownMenu) {
                 dropdownMenu.style.display = 'none';
@@ -293,18 +259,67 @@
 
     
 </script>
-
 <script>
-    const fileInput = document.getElementById('fileInput');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById("uploadFileModal");
+        const closeModalBtn = document.getElementById("closeUploadModalBtn");
+        const fileInput = document.getElementById("fileInput");
+        const fileNameDisplay = document.getElementById("fileNameDisplay");
+        const uploadForm = document.getElementById("uploadForm");
+        const fileSizeError = document.getElementById("fileSizeError");
 
-    fileInput.addEventListener('change', function () {
-        if (fileInput.files.length > 0) {
-            const fileNames = Array.from(fileInput.files).map(file => file.name).join(', ');
-            fileNameDisplay.textContent = fileNames;
-        } else {
-            fileNameDisplay.textContent = 'No file chosen';
+        const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
+
+    
+    
+        if (!modal || !closeModalBtn || !fileInput || !fileNameDisplay || !uploadForm) {
+            console.error("One or more elements not found.");
+            return;
         }
+    
+        fileInput.addEventListener("change", function() {
+            let totalSize = 0;
+            let fileNames = [];
+    
+            for (let file of this.files) {
+                totalSize += file.size;
+                fileNames.push(file.name);
+            }
+    
+            if (totalSize > MAX_FILE_SIZE) {
+                fileSizeError.textContent = `Total file size exceeds 100 MB. Please select smaller files.`;
+                fileSizeError.style.display = "block";
+                fileInput.value = "";  
+                fileNameDisplay.textContent = "No file chosen";
+            } else {
+                fileSizeError.style.display = "none";
+                fileNameDisplay.textContent = fileNames.length ? fileNames.join(", ") : "No file chosen";
+            }
+        });
+    
+        closeModalBtn.addEventListener("click", function() {
+            modal.style.display = "none";  
+            fileInput.value = "";  
+            fileNameDisplay.textContent = "No file chosen";  
+            fileSizeError.textContent = "";  
+            fileSizeError.style.display = "none";  
+        });
+        
+    
+        uploadForm.addEventListener("submit", function(event) {
+            if (fileSizeError.style.display === "block") {
+                event.preventDefault();  
+                alert("Cannot upload files exceeding 2 GB.");
+                return;
+            }
+    
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 500); 
+        });
     });
-</script>
+</script> 
+
+
+    
 {% endblock %}

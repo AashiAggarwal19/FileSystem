@@ -9,6 +9,17 @@
 <body>
   <div class="wrapper">
     <h2>Login</h2>
+
+    {% if messages %}
+    <div class="messages" style="margin-top:15px">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <form method="POST" id="otp-login-form" action="{% url 'login' %}">
       {% csrf_token %}
 
@@ -24,16 +35,6 @@
       <div class="text" style="margin-top:100px">
         <h3>Don't have an account? <a href="{% url 'register' %}">Register now</a></h3>
       </div>
-    {% endif %}
-
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
     {% endif %}
 
 

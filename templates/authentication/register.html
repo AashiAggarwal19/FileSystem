@@ -9,25 +9,79 @@
 <body>
     <div class="wrapper">
         <h2>Registration</h2>
+
+        {% if messages %}
+        <div class="messages" style="margin-top:15px">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
         <form method="POST" action="{% url 'register' %}">
           {% csrf_token %}
           <div class="input-box">
             <input type="text" name="username" placeholder="Enter your name" required>
           </div>
           <div class="input-box">
-            <input type="tel" name="phone_number" placeholder="Enter your phone number" required id="phone_number">
-          </div>
-          <div class="policy">
-            <input type="checkbox" required>
-            <h3>I accept all terms & conditions</h3>
+            <input 
+            type="tel" 
+            name="phone_number" 
+            maxlength="10" 
+            placeholder="Enter your phone number" 
+            required 
+            id="phone_number" 
+            oninput="validatePhoneNumber()">
           </div>
           <div class="input-box button">
-            <input type="submit" value="Register Now">
+            <input type="submit"  style="margin-top:10px !important" value="Register Now">
           </div>
           <div class="text">
             <h3>Already have an account? <a href="{% url 'login' %}">Login now</a></h3>
           </div>
         </form>
       </div>
+
+<script>
+  function validatePhoneNumber() {
+    const phoneInput = document.getElementById('phone_number');
+    const errorMessage = document.getElementById('error-message');
+    
+    phoneInput.value = phoneInput.value.replace(/\D/g, ''); 
+    console.log(phoneInput.value, "value")
+    
+    if (/[a-zA-Z]/.test(phoneInput.value)) {
+        showError('Please enter only numeric digits.');
+        return; 
+    }
+    
+    const regex = /^\d{10}$/;
+    if (!regex.test(phoneInput.value)) {
+        showError('Please enter exactly 10 digits.');
+    } else {
+        if (errorMessage) {
+            errorMessage.remove();
+        }
+    }
+}
+
+function showError(message) {
+    const phoneInput = document.getElementById('phone_number');
+    let errorMessage = document.getElementById('error-message');
+    
+    if (!errorMessage) {
+        errorMessage = document.createElement('p');
+        errorMessage.id = 'error-message';
+        errorMessage.style.color = 'red';
+        phoneInput.insertAdjacentElement('afterend', errorMessage);
+    }
+    
+    errorMessage.textContent = message;
+}
+
+
+</script>
     </body>
     </html>

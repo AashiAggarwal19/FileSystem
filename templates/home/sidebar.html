@@ -15,23 +15,39 @@
     margin-left: -15px
 }
 #file-explorer li {
-    display: block;
-    margin: 28px 10px;
+    margin: 20px 8px ;
     padding-left : 5px;
     transition: background-color 0.2s ease;
     cursor: pointer;
     border-radius: 5px;
 } 
+.folderElementLi{
+    flex-direction: column;
+    align-items: flex-start !important;
+}
+.sidebar-folder-icon,
+.sidebar-file-icon {
+  font-size: 18px;
+  margin-right: 8px; 
+  display: inline-block; 
+  align-items: center; 
+}
 
 .sidebar-folder-icon {
-    margin-right: 8px;
     color: #ffa726; 
-    font-size: 16px;
 }
 .sidebar-file-icon {
-    margin-right: 8px;
     color: #5c6bc0; 
-    font-size: 16px;
+}
+.sidebar-folder-name,
+.file-text {
+  font-size: 14px;
+  color: black;
+  display: inline-block; 
+  align-items: center;
+  word-wrap: break-word; 
+  white-space: normal;  
+  max-width: 200px; 
 }
 
 .folder-toggle {
@@ -47,23 +63,19 @@
     transform: rotate(90deg);
 }
 
-.sidebar-folder-name {
-    cursor: pointer;
-    color: black;
-    font-size: 17px;
-}
-
-.sidebar-file-text {
-    margin-left: 25px;
-}
-
 .subfolder {
-    margin-top: 8px;
-    margin-left: 20px;
-    padding-left: 15px;
+    display: none; 
 }
+
 .subfolder li {
-    margin: 5px 0; 
+    white-space: nowrap;
+    margin: 5px 0;
+    display: flex;  
+    align-items: center;
+}
+.subfolder .sidebar-folder-name,
+.subfolder .file-text {
+    margin-left: 5px;
 }
 
 </style>
@@ -71,8 +83,10 @@
 <body>
     <div class="sidebar">
         <div class="d-flex align-items-center mb-2">
-            <img src="{% static 'images/docs-logo.png' %}" alt="File Explorer" 
-                style="width: 100px; height: 100px; margin-right: 0px;margin-top:-20px;margin-left:-25px" />
+            <a href="/">
+                <img src="{% static 'images/docs-logo.png' %}" alt="File Explorer" 
+                     style="width: 100px; height: 100px; margin-right: 0px; margin-top: -20px; margin-left: -25px" />
+            </a>
             <span class="sidebar-title">DOCS App</span>
         </div>
         
@@ -87,6 +101,25 @@
 <script>
  document.addEventListener("DOMContentLoaded", () => {
     const fileExplorer = document.getElementById("file-explorer");
+
+    function handleClick(event) {
+        const target = event.target;
+
+        if (target.classList.contains('folder-clickable') || target.classList.contains('file-clickable')) {
+            document.querySelectorAll('.folder-clickable, .file-clickable').forEach((item) => {
+                item.classList.remove('active');
+            });
+            target.classList.add('active');
+
+            const path = target.getAttribute('data-path');
+            const folderDisplay = document.getElementById('folder-name-display');
+            if (folderDisplay) {
+                folderDisplay.textContent = target.textContent;
+            }
+        }
+    }
+
+    fileExplorer.addEventListener('click', handleClick);
 
     function fetchAndRender(path, container, isSubFolder = false) {
         const baseUrl = window.location.origin + "/file-explorer";
@@ -118,20 +151,24 @@
         if (!isSubFolder) {
             container.innerHTML = ""; 
         }
-
+    
         folders.forEach((folder) => {
             const folderElement = document.createElement("li");
+            folderElement.classList.add("folderElementLi");
+            folderElement.classList.add("d-flex");
             folderElement.innerHTML = `
+            <div>
                 <span class="folder-toggle" data-path="${currentPath}/${folder.name}"> ▶ </span>
                 <i class="sidebar-folder-icon fas fa-folder" style="font-size: 18px;"></i>
-                <span class="sidebar-folder-name">${folder.name}</span>
-                <ul class="subfolder" style="display: none; padding-left: 20px;" data-loaded="false"></ul>
+                <a href="/?path=${encodeURIComponent(folder.name)}" data-path="${currentPath}/${folder.name}" class="sidebar-folder-name folder-clickable" style="cursor:pointer">${folder.name}</a>
+            </div>
+                <ul class="subfolder" style="display: none; " data-loaded="false"></ul>
             `;
             container.appendChild(folderElement);
-
+    
             const toggleButton = folderElement.querySelector(".folder-toggle");
             const subFolderContainer = folderElement.querySelector(".subfolder");
-
+    
             toggleButton.addEventListener("click", function () {
                 if (subFolderContainer.style.display === "none") {
                     subFolderContainer.style.display = "block";
@@ -145,16 +182,22 @@
                 }
             });
         });
-
+    
         files.forEach((file) => {
             const fileElement = document.createElement("li");
+        
+            const parentFolder = currentPath.split('/').pop(); 
             fileElement.innerHTML = `
             <i class="sidebar-file-icon fas fa-file"></i>
-            <span class="file-text">${file.name}</span>`;
+            <a href="/?path=${encodeURIComponent(parentFolder)}" 
+                data-path="${encodeURIComponent(parentFolder)}" 
+                class="file-text file-clickable" 
+                style="cursor:pointer">${file.name}</a>
+             `;
             container.appendChild(fileElement);
         });
     }
-
+    
     // Initialize with root path
     const initialPath = fileExplorer.getAttribute("data-current-path").trim() || "root";
     fetchAndRender(initialPath, fileExplorer);
