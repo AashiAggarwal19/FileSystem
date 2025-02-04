@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     # 'storges'
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -54,7 +56,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Add this line
     'django.middleware.common.CommonMiddleware',
 ]
-
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 ROOT_URLCONF = 'filesystem.urls'
 
 TEMPLATES = [
@@ -166,3 +169,8 @@ CORS_ALLOWED_ORIGINS = [
 #     },
 # }
 
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]

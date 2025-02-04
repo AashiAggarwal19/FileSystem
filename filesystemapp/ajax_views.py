@@ -103,20 +103,19 @@ def download_zip(request, name):
     return response
 
 def shared_download_zip(request, name):
-    try:
-        folder = Folder.objects.get(name=name)
-    except Folder.DoesNotExist:
-        return HttpResponse("Folder Not Found!", status=404)
+    path = request. GET.get("path") or "root"
+    parent_folder = None if path == "root" else Folder.objects.filter(name=path).first()
 
-    if request.user not in folder.shared_by.all():
+    folder = Folder.objects.filter(name = name, parent=parent_folder, shared_by=request.user).first()
+    if not folder:
         return HttpResponse("You don't have permission to access this folder.", status=403)
 
     folder_path = "file"
     os.makedirs(folder_path, exist_ok=True)
 
     def add_folder_files_to_zip(folder, base_path):
-        subfolders = folder.subfolders.all()
-        files = folder.files.all()
+        subfolders = Folder.objects.filter(parent = folder, shared_by = request.user)
+        files = getattr(folder, "files", []).all() if hasattr(folder, "files") else []
 
         folder_path_in_zip = os.path.join(base_path, folder.name)
         os.makedirs(folder_path_in_zip, exist_ok=True)
